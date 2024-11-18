@@ -22,6 +22,9 @@ exports.getEventById = async (id) => {
             include: [
                 { model: Seat, as: 'seats', include: [{ model: SeatType, as: 'seatType' }] }
             ],
+            where: {
+                deletedAt: null
+            },
             attributes: { exclude: ['deletedAt'] }
         });
         if (!event) {
@@ -39,7 +42,7 @@ exports.getEventById = async (id) => {
 exports.getAllEvents = async ({ page = 1, limit = 10, name, address, status }) => {
     try {
         const offset = (page - 1) * limit;
-        const whereConditions = {};
+        const whereConditions = { deletedAt: null };
 
         if (name) {
             whereConditions.name = { [Op.like]: `%${name}%` };
@@ -81,7 +84,11 @@ exports.getAllEvents = async ({ page = 1, limit = 10, name, address, status }) =
  */
 exports.updateEvent = async (id, eventData) => {
     try {
-        const event = await Event.findByPk(id);
+        const event = await Event.findByPk(id,{
+            where: {
+                deletedAt: null
+            }
+        });
         if (!event) {
             throw new AppError('Evento no encontrado', 404);
         }
@@ -98,7 +105,11 @@ exports.updateEvent = async (id, eventData) => {
  */
 exports.deleteEvent = async (id) => {
     try {
-        const event = await Event.findByPk(id);
+        const event = await Event.findByPk(id,{
+            where: {
+                deletedAt: null
+            }
+        });
         if (!event) {
             throw new AppError('Evento no encontrado', 404);
         }
