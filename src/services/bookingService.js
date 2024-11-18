@@ -5,12 +5,10 @@ const {Op} = require('sequelize');
 exports.createBooking = async (user_id, bookingData) => {
     try {
         // Crea la reserva con los datos proporcionados
-        const booking = await Booking.create({
+        return await Booking.create({
             user_id,
             ...bookingData,
         });
-
-        return booking;
     } catch (error) {
         throw error;
     }
@@ -51,7 +49,7 @@ exports.getAllBookings = async ({ page = 1, limit = 10, fromDate, toDate, status
         }
 
         if (fromDate && toDate) {
-            whereConditions.bookingDate = {
+                whereConditions.bookingDate = {
                 [Op.between]: [new Date(fromDate), new Date(toDate)],
             };
         } else if (fromDate) {

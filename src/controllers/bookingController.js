@@ -8,10 +8,10 @@ exports.createBooking = async (req, res, next) => {
 
     try {
         const booking = await bookingService.createBooking(user_id, bookingData);
-        const { deletedAt, ...bookingData } = booking.toJSON();
+        const { deletedAt, ...bookingDataResponse } = booking.toJSON();
         res.status(201).json({
             message: 'Reserva creada exitosamente',
-            ...bookingData,
+            ...bookingDataResponse,
         });
         logger.info(`Reserva creada con ID: ${booking.id}`);
     } catch (error) {
@@ -62,10 +62,10 @@ exports.updateBooking = async (req, res, next) => {
 
     try {
         const booking = await bookingService.updateBooking(id, bookingData);
-        const { deletedAt, ...bookingData } = booking.toJSON();
+        const { deletedAt, ...bookingDataResponse } = booking.toJSON();
         res.status(200).json({
             message: 'Reserva actualizada exitosamente',
-            ...bookingData,
+            ...bookingDataResponse,
         });
         logger.info(`Reserva actualizada con ID: ${booking.id}`);
     } catch (error) {
@@ -82,8 +82,7 @@ exports.deleteBooking = async (req, res, next) => {
 
     try {
         await bookingService.deleteBooking(id);
-        const { deletedAt, ...bookingData } = booking.toJSON();
-        res.status(200).json({ message: 'Reserva eliminada exitosamente', ...bookingData});
+        res.status(200).json({ message: 'Reserva eliminada exitosamente'});
         logger.info(`Reserva eliminada con ID: ${id}`);
     } catch (error) {
         logger.error(`Error al eliminar la reserva ${id}`, error);
