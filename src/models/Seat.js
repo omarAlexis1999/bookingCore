@@ -27,7 +27,6 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     Seat.associate = (models) => {
-        Seat.belongsTo(models.Event, { foreignKey: 'event_id', as: 'event' });
         Seat.belongsTo(models.SeatType, { foreignKey: 'seat_type_id', as: 'seatType' });
     };
 

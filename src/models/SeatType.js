@@ -26,10 +26,11 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         tableName: 'SeatTypes',
         timestamps: true,
-        paranoid: false,
+        paranoid: true,
     });
 
     SeatType.associate = (models) => {
+        SeatType.belongsTo(models.Event, { foreignKey: 'event_id', as: 'event' });
         SeatType.hasMany(models.Seat, { foreignKey: 'seat_type_id', as: 'seats' });
     };
 

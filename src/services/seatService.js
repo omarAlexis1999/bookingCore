@@ -6,7 +6,17 @@ const AppError = require('../utils/AppError');
  */
 exports.createSeat = async (seatData) => {
     try {
-        return await Seat.create(seatData);
+        const { seat_type_id } = seatData;
+        const seatType = await SeatType.findByPk(seat_type_id, {
+            where: { deletedAt: null }
+        });
+        if (!seatType) {
+            throw new AppError('Tipo de asiento no encontrado', 404);
+        }
+        return await Seat.create({
+            ...seatData,
+            seat_type_id
+        });
     } catch (error) {
         throw error;
     }
@@ -21,7 +31,12 @@ exports.getSeatById = async (id) => {
             where: {
                 deletedAt: null
             },
-            include: [{ model: SeatType, as: 'seatType' }],
+            include: [
+                {   model: SeatType,
+                    as: 'seatType',
+                    attributes: ['name','price'],
+                }
+            ],
             attributes: { exclude: ['deletedAt'] },
         });
 
@@ -38,13 +53,13 @@ exports.getSeatById = async (id) => {
 /**
  * Listar todos los asientos de un evento
  */
-exports.getSeatsByEvent = async (eventId, { page = 1, limit = 10, row, status, minPrice, maxPrice }) => {
+exports.getSeatsByEvent = async (event_id, { page = 1, limit = 10, row, status, minPrice, maxPrice }) => {
     try {
         // Calcula el offset y el límite para la paginación
         const offset = (page - 1) * limit;
 
         // Construye las condiciones dinámicas para los filtros
-        const whereConditions = { event_id: eventId, deletedAt: null };
+        const whereConditions = { deletedAt: null };
 
         if (row) {
             whereConditions.row = row; // Filtra por fila específica
@@ -71,7 +86,13 @@ exports.getSeatsByEvent = async (eventId, { page = 1, limit = 10, row, status, m
         // Consulta paginada con filtros
         const { rows: seats, count: total } = await Seat.findAndCountAll({
             where: whereConditions,
-            include: [{ model: SeatType, as: 'seatType' }],
+            include: [
+                {   model: SeatType,
+                    as: 'seatType' ,
+                    attributes: ['name','price'],
+                    where: { event_id}
+                }
+            ],
             attributes: { exclude: ['deletedAt'] },
             limit: parseInt(limit), // Límite de registros por página
             offset: parseInt(offset), // Desplazamiento

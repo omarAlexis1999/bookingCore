@@ -10,7 +10,7 @@ app.use('/api/v1', routes);
 // Middleware de manejo de errores
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 // Sincroniza los modelos con la base de datos
 db.sequelize.sync({ alter: true }) // Puedes usar { force: true } para recrear tablas (¡Cuidado, puede borrar datos!)
     .then(() => {

@@ -1,4 +1,4 @@
-const { Event, Seat, SeatType } = require('../models');
+const { Event, SeatType } = require('../models');
 const AppError = require('../utils/AppError');
 const { Op } = require('sequelize');
 
@@ -20,7 +20,7 @@ exports.getEventById = async (id) => {
     try {
         const event = await Event.findByPk(id, {
             include: [
-                { model: Seat, as: 'seats', include: [{ model: SeatType, as: 'seatType' }] }
+                { model: SeatType, as: 'seatTypes' }
             ],
             where: {
                 deletedAt: null
@@ -56,11 +56,10 @@ exports.getAllEvents = async ({ page = 1, limit = 10, name, address, status }) =
             whereConditions.status = status;
         }
 
-
         const { rows: events, count: total } = await Event.findAndCountAll({
             where: whereConditions,
             include: [
-                { model: Seat, as: 'seats' }
+                { model: SeatType, as: 'seatTypes' }
             ],
             attributes: { exclude: ['deletedAt'] },
             limit: parseInt(limit),

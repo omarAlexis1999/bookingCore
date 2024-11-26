@@ -59,7 +59,7 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     Event.associate = (models) => {
-        Event.hasMany(models.Seat, { foreignKey: 'event_id', as: 'seats' });
+        Event.hasMany(models.SeatType, { foreignKey: 'event_id', as: 'seatTypes' });
     };
 
     return Event;
