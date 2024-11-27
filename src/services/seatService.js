@@ -7,16 +7,15 @@ const AppError = require('../utils/AppError');
 exports.createSeat = async (seatData) => {
     try {
         const { seat_type_id } = seatData;
-        const seatType = await SeatType.findByPk(seat_type_id, {
-            where: { deletedAt: null }
-        });
+        const seatType = await SeatType.findByPk(seat_type_id);
         if (!seatType) {
             throw new AppError('Tipo de asiento no encontrado', 404);
         }
-        return await Seat.create({
+        const seat = await Seat.create({
             ...seatData,
             seat_type_id
         });
+        return seat.toSafeJSON();
     } catch (error) {
         throw error;
     }
@@ -28,16 +27,12 @@ exports.createSeat = async (seatData) => {
 exports.getSeatById = async (id) => {
     try {
         const seat = await Seat.findByPk(id, {
-            where: {
-                deletedAt: null
-            },
             include: [
                 {   model: SeatType,
                     as: 'seatType',
                     attributes: ['name','price'],
                 }
-            ],
-            attributes: { exclude: ['deletedAt'] },
+            ]
         });
 
         if (!seat) {
@@ -59,7 +54,7 @@ exports.getSeatsByEvent = async (event_id, { page = 1, limit = 10, row, status, 
         const offset = (page - 1) * limit;
 
         // Construye las condiciones dinámicas para los filtros
-        const whereConditions = { deletedAt: null };
+        const whereConditions = { };
 
         if (row) {
             whereConditions.row = row; // Filtra por fila específica
@@ -93,7 +88,6 @@ exports.getSeatsByEvent = async (event_id, { page = 1, limit = 10, row, status, 
                     where: { event_id}
                 }
             ],
-            attributes: { exclude: ['deletedAt'] },
             limit: parseInt(limit), // Límite de registros por página
             offset: parseInt(offset), // Desplazamiento
         });
@@ -121,17 +115,13 @@ exports.getSeatsByEvent = async (event_id, { page = 1, limit = 10, row, status, 
  */
 exports.updateSeat = async (id, seatData) => {
     try {
-        const seat = await Seat.findByPk(id,{
-            where: {
-                deletedAt: null
-            }
-        });
+        const seat = await Seat.findByPk(id);
         if (!seat) {
             throw new AppError('Asiento no encontrado', 404);
         }
 
-        await seat.update(seatData);
-        return seat;
+        const seatUpdate = await seat.update(seatData);
+        return seatUpdate.toSafeJSON();
     } catch (error) {
         throw error;
     }
@@ -142,11 +132,7 @@ exports.updateSeat = async (id, seatData) => {
  */
 exports.deleteSeat = async (id) => {
     try {
-        const seat = await Seat.findByPk(id,{
-            where: {
-                deletedAt: null
-            }
-        });
+        const seat = await Seat.findByPk(id);
         if (!seat) {
             throw new AppError('Asiento no encontrado', 404);
         }

@@ -7,7 +7,8 @@ const { Op } = require('sequelize');
  */
 exports.createEvent = async (eventData) => {
     try {
-        return await Event.create(eventData);
+        const event = await Event.create(eventData);
+        return event.toSafeJSON();
     } catch (error) {
         throw error;
     }
@@ -20,12 +21,12 @@ exports.getEventById = async (id) => {
     try {
         const event = await Event.findByPk(id, {
             include: [
-                { model: SeatType, as: 'seatTypes' }
-            ],
-            where: {
-                deletedAt: null
-            },
-            attributes: { exclude: ['deletedAt'] }
+                {
+                    model: SeatType,
+                    as: 'seatTypes',
+                    required: false,
+                }
+            ]
         });
         if (!event) {
             throw new AppError('Evento no encontrado', 404);
@@ -42,7 +43,7 @@ exports.getEventById = async (id) => {
 exports.getAllEvents = async ({ page = 1, limit = 10, name, address, status }) => {
     try {
         const offset = (page - 1) * limit;
-        const whereConditions = { deletedAt: null };
+        const whereConditions = {};
 
         if (name) {
             whereConditions.name = { [Op.like]: `%${name}%` };
@@ -59,9 +60,12 @@ exports.getAllEvents = async ({ page = 1, limit = 10, name, address, status }) =
         const { rows: events, count: total } = await Event.findAndCountAll({
             where: whereConditions,
             include: [
-                { model: SeatType, as: 'seatTypes' }
+                {
+                    model: SeatType,
+                    as: 'seatTypes',
+                    required: false,
+                }
             ],
-            attributes: { exclude: ['deletedAt'] },
             limit: parseInt(limit),
             offset: parseInt(offset),
         });
@@ -83,17 +87,13 @@ exports.getAllEvents = async ({ page = 1, limit = 10, name, address, status }) =
  */
 exports.updateEvent = async (id, eventData) => {
     try {
-        const event = await Event.findByPk(id,{
-            where: {
-                deletedAt: null
-            }
-        });
+        const event = await Event.findByPk(id);
         if (!event) {
             throw new AppError('Evento no encontrado', 404);
         }
 
         await event.update(eventData);
-        return event;
+        return event.toSafeJSON();
     } catch (error) {
         throw error;
     }
@@ -104,11 +104,7 @@ exports.updateEvent = async (id, eventData) => {
  */
 exports.deleteEvent = async (id) => {
     try {
-        const event = await Event.findByPk(id,{
-            where: {
-                deletedAt: null
-            }
-        });
+        const event = await Event.findByPk(id);
         if (!event) {
             throw new AppError('Evento no encontrado', 404);
         }

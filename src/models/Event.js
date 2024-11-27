@@ -1,6 +1,15 @@
 'use strict';
+const BaseModel = require('./BaseModel');
+
 module.exports = (sequelize, DataTypes) => {
-    const Event = sequelize.define('Event', {
+
+    class Event extends BaseModel {
+        static associate(models) {
+            Event.hasMany(models.SeatType, { foreignKey: 'event_id', as: 'seatTypes' });
+        }
+    }
+
+    Event.init({
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -53,14 +62,12 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
     }, {
+        sequelize,
         tableName: 'Events',
         timestamps: true,
         paranoid: true, // Enables soft deletes (deletedAt)
     });
 
-    Event.associate = (models) => {
-        Event.hasMany(models.SeatType, { foreignKey: 'event_id', as: 'seatTypes' });
-    };
 
     return Event;
 };

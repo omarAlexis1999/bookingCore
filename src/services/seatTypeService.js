@@ -8,17 +8,16 @@ const { Op } = require('sequelize');
 exports.createSeatType = async (seatTypeData) => {
     try {
         const { event_id  } = seatTypeData;
-        const event = await Event.findByPk(event_id,{
-            where: { deletedAt: null }
-        });
+        const event = await Event.findByPk(event_id);
         if (!event) {
             throw new AppError('Evento no encontrado', 404);
         }
 
-        return await SeatType.create({
+        const seatType = await SeatType.create({
             ...seatTypeData,
             event_id
         });
+        return seatType.toSafeJSON();
     } catch (error) {
         throw error;
     }
@@ -29,10 +28,7 @@ exports.createSeatType = async (seatTypeData) => {
  */
 exports.getSeatTypeById = async (id) => {
     try {
-        const seatType = await SeatType.findByPk(id,{
-            where: { deletedAt: null },
-            attributes: { exclude: ['deletedAt'] }
-        });
+        const seatType = await SeatType.findByPk(id);
         if (!seatType) {
             throw new AppError('Tipo de Asiento no encontrado', 404);
         }
@@ -51,7 +47,7 @@ exports.getAllSeatTypes = async (event_id,{ page = 1, limit = 10, name, sortBy =
         const offset = (page - 1) * limit;
 
         // Construye las condiciones dinámicas para el filtro
-        const whereConditions = {deletedAt: null, event_id};
+        const whereConditions = {};
         if (name) {
             whereConditions.name = { [Op.like]: `%${name}%` }; // Filtro por nombre parcial
         }
@@ -65,7 +61,6 @@ exports.getAllSeatTypes = async (event_id,{ page = 1, limit = 10, name, sortBy =
         // Consulta paginada con filtros y ordenamiento
         const { rows: seatTypes, count: total } = await SeatType.findAndCountAll({
             where: whereConditions,
-            attributes: { exclude: ['deletedAt'] },
             order: [[sortBy, order.toUpperCase()]], // Ordenamiento dinámico
             limit: parseInt(limit),
             offset: parseInt(offset),
@@ -88,14 +83,12 @@ exports.getAllSeatTypes = async (event_id,{ page = 1, limit = 10, name, sortBy =
  */
 exports.updateSeatType = async (id, seatTypeData) => {
     try {
-        const seatType = await SeatType.findByPk(id, {
-            where: { deletedAt: null }
-        });
+        const seatType = await SeatType.findByPk(id);
         if (!seatType) {
             throw new AppError('Tipo de Asiento no encontrado', 404);
         }
-        await seatType.update(seatTypeData);
-        return seatType;
+        const seatTypeUpdate = await seatType.update(seatTypeData);
+        return seatTypeUpdate.toSafeJSON();
     } catch (error) {
         throw error;
     }
@@ -106,9 +99,7 @@ exports.updateSeatType = async (id, seatTypeData) => {
  */
 exports.deleteSeatType = async (id) => {
     try {
-        const seatType = await SeatType.findByPk(id,{
-            where: { deletedAt: null }
-        });
+        const seatType = await SeatType.findByPk(id);
         if (!seatType) {
             throw new AppError('Tipo de Asiento no encontrado', 404);
         }

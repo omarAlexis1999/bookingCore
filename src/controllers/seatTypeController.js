@@ -9,10 +9,9 @@ const logger = require('../utils/logger');
 exports.createSeatType = async (req, res, next) => {
     try {
         const seatType = await seatTypeService.createSeatType(req.body);
-        const { deletedAt, ...seatTypeDataResponse } = seatType.toJSON();
         res.status(201).json({
             message: 'Tipo de Asiento creado exitosamente',
-            ...seatTypeDataResponse,
+            ...seatType,
         });
         logger.info(`Tipo de asiento creado con ID: ${seatType.id}`);
     } catch (error) {
@@ -70,10 +69,9 @@ exports.updateSeatType = async (req, res, next) => {
     const { id } = req.params;
     try {
         const seatType = await seatTypeService.updateSeatType(id, req.body);
-        const { deletedAt, ...seatTypeDataResponse } = seatType.toJSON();
         res.status(200).json({
             message: 'Tipo de Asiento actualizado correctamente',
-            ...seatTypeDataResponse,
+            ...seatType,
         });
         logger.info(`Tipo de asiento actualizado con ID: ${seatType.id}`);
     } catch (error) {

@@ -28,6 +28,7 @@ fs
       file.indexOf('.') !== 0 &&
       file !== basename &&
       file.slice(-3) === '.js' &&
+      !file.includes('Base') &&
       file.indexOf('.test.js') === -1
     );
   })

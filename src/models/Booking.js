@@ -1,6 +1,15 @@
 'use strict';
+const BaseModel = require('./BaseModel');
+
 module.exports = (sequelize, DataTypes) => {
-    const Booking = sequelize.define('Booking', {
+
+    class Booking extends BaseModel {
+        static associate(models) {
+            Booking.belongsToMany(models.Seat, { through: 'BookingSeats', as: 'seats', foreignKey: 'booking_id' });
+        }
+    }
+
+    Booking.init({
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -26,14 +35,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
         },
     }, {
+        sequelize,
         tableName: 'Bookings',
         timestamps: true,
         paranoid: true,
     });
-
-    Booking.associate = (models) => {
-        Booking.belongsToMany(models.Seat, { through: 'BookingSeats', as: 'seats', foreignKey: 'booking_id' });
-    };
 
     return Booking;
 };

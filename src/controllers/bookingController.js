@@ -8,10 +8,9 @@ exports.createBooking = async (req, res, next) => {
 
     try {
         const booking = await bookingService.createBooking(user_id, bookingData);
-        const { deletedAt, ...bookingDataResponse } = booking.toJSON();
         res.status(201).json({
             message: 'Reserva creada exitosamente',
-            ...bookingDataResponse,
+            ...booking,
         });
         logger.info(`Reserva creada con ID: ${booking.id}`);
     } catch (error) {
@@ -62,10 +61,9 @@ exports.updateBooking = async (req, res, next) => {
 
     try {
         const booking = await bookingService.updateBooking(id, bookingData);
-        const { deletedAt, ...bookingDataResponse } = booking.toJSON();
         res.status(200).json({
             message: 'Reserva actualizada exitosamente',
-            ...bookingDataResponse,
+            ...booking,
         });
         logger.info(`Reserva actualizada con ID: ${booking.id}`);
     } catch (error) {

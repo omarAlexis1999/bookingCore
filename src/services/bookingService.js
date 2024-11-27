@@ -16,7 +16,6 @@ exports.createBooking = async (user_id, bookingData) => {
             where: {
                 id: seats,
                 status: 'available', // Solo permite asientos disponibles
-                deletedAt: null,
             },
             include: [{
                 model: SeatType,
@@ -27,8 +26,25 @@ exports.createBooking = async (user_id, bookingData) => {
 
         // Verifica que todos los asientos existan y estén disponibles
         if (foundSeats.length !== seats.length) {
-            throw new AppError('Uno o más asientos no están disponibles o no existen.', 400);
+            // Encuentra los IDs de los asientos que no están disponibles o no existen
+            const unavailableSeats = seats.filter(
+                seatId => !foundSeats.some(foundSeat => foundSeat.id === seatId)
+            );
+
+            // Busca detalles de los asientos no disponibles
+            const unavailableDetails = await Seat.findAll({
+                where: {
+                    id: unavailableSeats,
+                },
+                attributes: ['row', 'number'],
+            });
+
+            // Construye el mensaje de error
+            const seatDetails = unavailableDetails.map(seat => `[${seat.row}][${seat.number}]`).join(', ');
+
+            throw new AppError(`Asientos ${seatDetails} no están disponibles.`, 400);
         }
+
 
         // Calcula el costo total sumando los precios de los asientos
         const totalCost = foundSeats.reduce((sum, seat) => {
@@ -57,7 +73,7 @@ exports.createBooking = async (user_id, bookingData) => {
             { where: { id: seats } }
         );
 
-        return booking;
+        return booking.toSafeJSON();
     } catch (error) {
         throw error;
     }
@@ -71,21 +87,18 @@ exports.getBookingById = async (id) => {
                 {
                     model: Seat,
                     as: 'seats',
-                    attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
                     through: { attributes: [] },
+                    required: false,
                     include: [
                         {
                             model: SeatType,
                             as: 'seatType',
                             attributes: ['name', 'price'], // Incluye nombre y precio del SeatType
+                            required: false,
                         },
                     ],
                 }
-            ],
-            where: {
-                deletedAt: null
-            },
-            attributes: { exclude: ['deletedAt'] }
+            ]
         });
 
         if (!booking) {
@@ -105,7 +118,7 @@ exports.getAllBookings = async ({ page = 1, limit = 10, fromDate, toDate, status
         const offset = (page - 1) * limit;
 
         // Construye las condiciones dinámicas para los filtros
-        const whereConditions = { deletedAt: null };
+        const whereConditions = { };
 
         if (user_id) {
             whereConditions.user_id = user_id;
@@ -136,18 +149,18 @@ exports.getAllBookings = async ({ page = 1, limit = 10, fromDate, toDate, status
                 {
                     model: Seat,
                     as: 'seats',
-                    attributes: { exclude: ['createdAt', 'updatedAt', 'deletedAt'] },
                     through: { attributes: [] },
+                    required: false,
                     include: [
                         {
                             model: SeatType,
                             as: 'seatType',
                             attributes: ['name', 'price'], // Incluye nombre y precio del SeatType
+                            required: false,
                         },
                     ],
                 }
             ],
-            attributes: { exclude: ['deletedAt'] },
             limit: parseInt(limit), // Límite de registros por página
             offset: parseInt(offset), // Desplazamiento
         });
@@ -169,34 +182,121 @@ exports.getAllBookings = async ({ page = 1, limit = 10, fromDate, toDate, status
 
 exports.updateBooking = async (id, bookingData) => {
     try {
-        // Busca la reserva por su ID
+        const { seats: newSeatIds, ...dataToUpdate } = bookingData;
+
+        // Bloquea la modificación de `totalCost`
+        if ('totalCost' in dataToUpdate) {
+            delete dataToUpdate.totalCost;
+        }
+
+        // Encuentra la reserva existente
         const booking = await Booking.findByPk(id, {
-            where: {
-                deletedAt: null
-            }
+            include: [
+                {
+                    model: Seat,
+                    as: 'seats',
+                    through: { attributes: [] }, // Excluye BookingSeats
+                    required: false,
+                }
+            ]
         });
 
         if (!booking) {
             throw new AppError('Reserva no encontrada', 404);
         }
 
-        // Actualiza la reserva
-        await booking.update(bookingData);
+        // Obtén los IDs de los asientos actualmente asociados
+        const currentSeatIds = booking.seats.map(seat => seat.id);
 
-        return booking;
+        // Identifica los nuevos asientos que se agregarán
+        const seatsToAdd = newSeatIds.filter(seatId => !currentSeatIds.includes(seatId));
+        const seatsToRemove = currentSeatIds.filter(seatId => !newSeatIds.includes(seatId));
+
+        // Valida que los nuevos asientos estén disponibles
+        if (seatsToAdd.length > 0) {
+            const availableSeats = await Seat.findAll({
+                where: {
+                    id: seatsToAdd,
+                    status: 'available'
+                }
+            });
+
+            if (availableSeats.length !== seatsToAdd.length) {
+                throw new AppError('Uno o más asientos no están disponibles para la reserva.', 400);
+            }
+        }
+
+        // Cambia el estado de los asientos que se eliminarán a "available"
+        if (seatsToRemove.length > 0) {
+            await Seat.update(
+                { status: 'available' },
+                { where: { id: seatsToRemove } }
+            );
+            await booking.removeSeats(seatsToRemove);
+        }
+
+        // Actualiza los asientos asociados
+        if (seatsToAdd.length > 0) {
+            const seatsToAssociate = await Seat.findAll({
+                where: { id: seatsToAdd }
+            });
+            await booking.addSeats(seatsToAssociate);
+
+            // Cambia el estado de los nuevos asientos a "reserved"
+            await Seat.update(
+                { status: 'reserved' },
+                { where: { id: seatsToAdd } }
+            );
+        }
+
+        // Actualiza otros campos de la reserva
+        await booking.update(dataToUpdate);
+
+        // Recalcula el `totalCost` después de las modificaciones en los asientos
+        const allSeats = await booking.getSeats({
+            include: [{ model: SeatType, as: 'seatType' }]
+        });
+
+        const totalCost = allSeats.reduce((sum, seat) => sum + seat.seatType.price, 0);
+        await booking.update({ totalCost });
+
+        //return bookingUpdate.toSafeJSON();
+         await booking.reload({
+            include: [
+                {
+                    model: Seat,
+                    as: 'seats',
+                    through: { attributes: [] },
+                    required: false,
+                    include: [
+                        {
+                            model: SeatType,
+                            as: 'seatType',
+                            attributes: ['name', 'price'],
+                            required: false,
+                        },
+                    ],
+                },
+            ],
+        });
+        return booking.toSafeJSON();
     } catch (error) {
         throw error;
     }
 };
 
+
 exports.deleteBooking = async (id) => {
     try {
         // Busca la reserva por su ID
         const booking = await Booking.findByPk(id, {
-            where: {
-                deletedAt: null
-            },
-            include: [{ model: Seat, as: 'seats' }]
+            include: [
+                {
+                    model: Seat,
+                    as: 'seats',
+                    required: false,
+                }
+            ]
         });
 
         if (!booking) {

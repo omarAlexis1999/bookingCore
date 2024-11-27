@@ -8,10 +8,9 @@ const logger = require('../utils/logger');
 exports.createEvent = async (req, res, next) => {
     try {
         const event = await eventService.createEvent(req.body);
-        const { deletedAt, ...eventDataResponse } = event.toJSON();
         res.status(201).json({
             message: 'Evento creado exitosamente',
-            ...eventDataResponse,
+            ...event,
         });
         logger.info(`Evento creado con ID: ${event.id}`);
     } catch (error) {
@@ -28,7 +27,6 @@ exports.createEvent = async (req, res, next) => {
  */
 exports.getEventById = async (req, res, next) => {
     const { id } = req.params;
-
     try {
         const event = await eventService.getEventById(id);
         res.status(200).json(event);
@@ -69,10 +67,9 @@ exports.updateEvent = async (req, res, next) => {
 
     try {
         const event = await eventService.updateEvent(id, req.body);
-        const { deletedAt, ...eventDataResponse } = event.toJSON();
         res.status(200).json({
             message: 'Evento actualizado exitosamente',
-            ...eventDataResponse,
+            ...event,
         });
         logger.info(`Evento actualizado con ID: ${event.id}`);
     } catch (error) {

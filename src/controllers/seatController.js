@@ -5,10 +5,9 @@ const logger = require('../utils/logger');
 exports.createSeat = async (req, res, next) => {
     try {
         const seat = await seatService.createSeat(req.body);
-        const { deletedAt, ...seatDataResponse } = seat.toJSON();
         res.status(201).json({
             message: 'Asiento creado exitosamente',
-            ...seatDataResponse,
+            ...seat,
         });
         logger.info(`Asiento creado con ID: ${seat.id}`);
     } catch (error) {
@@ -58,10 +57,9 @@ exports.updateSeat = async (req, res, next) => {
 
     try {
         const seat = await seatService.updateSeat(id, req.body);
-        const { deletedAt, ...seatDataResponse } = seat.toJSON();
         res.status(200).json({
             message: 'Asiento actualizado exitosamente',
-            ...seatDataResponse,
+            ...seat,
         });
         logger.info(`Asiento actualizado con ID: ${seat.id}`);
     } catch (error) {
