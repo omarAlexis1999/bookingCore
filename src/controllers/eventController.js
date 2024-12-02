@@ -14,7 +14,7 @@ exports.createEvent = async (req, res, next) => {
         });
         logger.info(`Evento creado con ID: ${event.id}`);
     } catch (error) {
-        logger.error('Error en la creación del evento', error);
+        logger.error('Error en la creación del evento', error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -32,7 +32,7 @@ exports.getEventById = async (req, res, next) => {
         res.status(200).json(event);
         logger.info(`Evento encontrado con ID: ${event.id}`);
     } catch (error) {
-        logger.error(`Error al buscar el evento con ID: ${id}`, error);
+        logger.error(`Error al buscar el evento con ID: ${id}`, error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -51,7 +51,7 @@ exports.getAllEvents = async (req, res, next) => {
         res.status(200).json(events);
         logger.info('Listado de Evento encontrados');
     } catch (error) {
-        logger.error('Error al buscar los eventos', error);
+        logger.error('Error al buscar los eventos', error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -94,7 +94,7 @@ exports.deleteEvent = async (req, res, next) => {
         });
         logger.info(`Evento eliminado con ID: ${id}`);
     } catch (error) {
-        logger.error(`Error al eliminar el evento con ID: ${id}`, error);
+        logger.error(`Error al eliminar el evento con ID: ${id}`, error.message);
         if (error instanceof AppError) {
             return next(error);
         }

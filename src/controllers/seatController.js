@@ -11,7 +11,7 @@ exports.createSeat = async (req, res, next) => {
         });
         logger.info(`Asiento creado con ID: ${seat.id}`);
     } catch (error) {
-        logger.error('Error en la creación del asiento', error);
+        logger.error('Error en la creación del asiento', error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -27,7 +27,7 @@ exports.getSeatById = async (req, res, next) => {
         res.status(200).json(seat);
         logger.info(`Asiento encontrado con ID: ${seat.id}`);
     } catch (error) {
-        logger.error(`Error al buscar el asiento con ID: ${id}`, error);
+        logger.error(`Error al buscar el asiento con ID: ${id}`, error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -44,7 +44,7 @@ exports.getSeatsByEvent = async (req, res, next) => {
         res.status(200).json(seats);
         logger.info(`Asientos encontrados para el evento con ID: ${id}`);
     } catch (error) {
-        logger.error(`Error al buscar los asientos para el evento con ID: ${id}`, error);
+        logger.error(`Error al buscar los asientos para el evento con ID: ${id}`, error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -63,7 +63,7 @@ exports.updateSeat = async (req, res, next) => {
         });
         logger.info(`Asiento actualizado con ID: ${seat.id}`);
     } catch (error) {
-        logger.error(`Error al actualizar el asiento con ID: ${id}`, error);
+        logger.error(`Error al actualizar el asiento con ID: ${id}`, error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -81,7 +81,7 @@ exports.deleteSeat = async (req, res, next) => {
         });
         logger.info(`Asiento eliminado con ID: ${id}`);
     } catch (error) {
-        logger.error(`Error al eliminar el asiento con ID: ${id}`, error);
+        logger.error(`Error al eliminar el asiento con ID: ${id}`, error.message);
         if (error instanceof AppError) {
             return next(error);
         }

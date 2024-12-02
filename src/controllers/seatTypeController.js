@@ -15,7 +15,7 @@ exports.createSeatType = async (req, res, next) => {
         });
         logger.info(`Tipo de asiento creado con ID: ${seatType.id}`);
     } catch (error) {
-        logger.error('Error en la creación del tipo de asiento', error);
+        logger.error('Error en la creación del tipo de asiento', error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -33,7 +33,7 @@ exports.getSeatTypeById = async (req, res, next) => {
         res.status(200).json(seatType);
         logger.info(`Tipo de asiento encontrado con ID: ${seatType.id}`);
     } catch (error) {
-        logger.error(`Error al buscar el tipo de asiento con ID: ${id}`, error);
+        logger.error(`Error al buscar el tipo de asiento con ID: ${id}`, error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -53,7 +53,7 @@ exports.getAllSeatTypes = async (req, res, next) => {
         res.status(200).json(seatTypes);
         logger.info('Tipos de asiento encontrados');
     } catch (error) {
-        logger.error('Error al buscar los tipos de asiento', error);
+        logger.error('Error al buscar los tipos de asiento', error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -75,7 +75,7 @@ exports.updateSeatType = async (req, res, next) => {
         });
         logger.info(`Tipo de asiento actualizado con ID: ${seatType.id}`);
     } catch (error) {
-        logger.error(`Error al actualizar el tipo de asiento con ID: ${id}`, error);
+        logger.error(`Error al actualizar el tipo de asiento con ID: ${id}`, error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -95,7 +95,7 @@ exports.deleteSeatType = async (req, res, next) => {
         });
         logger.info(`Tipo de asiento eliminado con ID: ${id}`);
     } catch (error) {
-        logger.error(`Error al eliminar el tipo de asiento con ID: ${id}`, error);
+        logger.error(`Error al eliminar el tipo de asiento con ID: ${id}`, error.message);
         if (error instanceof AppError) {
             return next(error);
         }

@@ -47,7 +47,7 @@ exports.getAllSeatTypes = async (event_id,{ page = 1, limit = 10, name, sortBy =
         const offset = (page - 1) * limit;
 
         // Construye las condiciones dinámicas para el filtro
-        const whereConditions = {};
+        const whereConditions = {event_id};
         if (name) {
             whereConditions.name = { [Op.like]: `%${name}%` }; // Filtro por nombre parcial
         }

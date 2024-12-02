@@ -14,7 +14,7 @@ exports.createBooking = async (req, res, next) => {
         });
         logger.info(`Reserva creada con ID: ${booking.id}`);
     } catch (error) {
-        logger.error('Error en la creación de la reserva', error);
+        logger.error('Error en la creación de la reserva', error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -24,13 +24,14 @@ exports.createBooking = async (req, res, next) => {
 
 exports.getBookingById = async (req, res, next) => {
     const { id } = req.params;
+    const { page, limit } = req.query;
 
     try {
-        const booking = await bookingService.getBookingById(id);
+        const booking = await bookingService.getBookingById({ id, page, limit});
         res.status(200).json(booking);
         logger.info(`Reserva encontrada con ID: ${booking.id}`);
     } catch (error) {
-        logger.error('Error al buscar la reserva', error);
+        logger.error(`Error al buscar la reserva ${id}`, error);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -46,7 +47,7 @@ exports.getAllBookings = async (req, res, next) => {
         res.status(200).json(bookings);
         logger.info('Reservas encontradas');
     } catch (error) {
-        logger.error('Error al buscar las reservas', error);
+        logger.error('Error al buscar las reservas', error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -67,7 +68,7 @@ exports.updateBooking = async (req, res, next) => {
         });
         logger.info(`Reserva actualizada con ID: ${booking.id}`);
     } catch (error) {
-        logger.error(`Error al actualizar la reserva ${id}`, error);
+        logger.error(`Error al actualizar la reserva ${id}`, error.message);
         if (error instanceof AppError) {
             return next(error);
         }
@@ -83,7 +84,7 @@ exports.deleteBooking = async (req, res, next) => {
         res.status(200).json({ message: 'Reserva eliminada exitosamente'});
         logger.info(`Reserva eliminada con ID: ${id}`);
     } catch (error) {
-        logger.error(`Error al eliminar la reserva ${id}`, error);
+        logger.error(`Error al eliminar la reserva ${id}`, error.message);
         if (error instanceof AppError) {
             return next(error);
         }
