@@ -40,7 +40,7 @@ exports.getEventById = async (id) => {
 /**
  * Listar todos los eventos con filtros y paginación
  */
-exports.getAllEvents = async ({ page = 1, limit = 10, name, address, status }) => {
+exports.getAllEvents = async ( page = 1, limit = 10, name, address, status ) => {
     try {
         const offset = (page - 1) * limit;
         const whereConditions = {};
