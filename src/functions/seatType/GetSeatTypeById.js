@@ -1,20 +1,20 @@
 const { app } = require('@azure/functions');
-const eventService = require('../../services/eventService');
+const seatTypeService = require('../../services/seatTypeService');
 const errorHandler  = require('../../middlewares/errorHandler');
 const logHandler = require('../../middlewares/logHandler');
 const { responseHandler} = require('../../utils/requestUtils');
 
-const getEventById = async (request, context) => {
+const getSeatTypeById = async (request, context) => {
     context.log(`Http function processed request for url "${request.url}"`);
-    const result = await logHandler('Get Event', context, async () => {
+    const result = await logHandler('Get SeatType', context, async () => {
         const { id } = request.params;
-        return await eventService.getEventById(id);
+        return await seatTypeService.getSeatTypeById(id);
     });
     return responseHandler(200, result);
 };
-app.http('GetEvent', {
+app.http('GetSeatType', {
     methods: ['GET'],
     authLevel: 'anonymous',
-    route: 'event/{id}',
-    handler: errorHandler(getEventById),
+    route: 'seatType/{id}',
+    handler: errorHandler(getSeatTypeById),
 });

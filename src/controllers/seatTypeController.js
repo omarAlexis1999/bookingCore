@@ -49,7 +49,7 @@ exports.getAllSeatTypes = async (req, res, next) => {
     const { id } = req.params;
 
     try {
-        const seatTypes = await seatTypeService.getAllSeatTypes(id,{ page, limit, name, sortBy, order });
+        const seatTypes = await seatTypeService.getAllSeatTypes(id, page, limit, name, sortBy, order);
         res.status(200).json(seatTypes);
         logger.info('Tipos de asiento encontrados');
     } catch (error) {

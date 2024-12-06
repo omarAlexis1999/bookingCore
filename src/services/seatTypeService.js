@@ -41,7 +41,7 @@ exports.getSeatTypeById = async (id) => {
 /**
  * Listar todos los tipos de asiento por evento con paginación, ordenamiento y filtro
  */
-exports.getAllSeatTypes = async (event_id,{ page = 1, limit = 10, name, sortBy = 'price', order = 'ASC' }) => {
+exports.getAllSeatTypes = async (event_id, page = 1, limit = 10, name, sortBy = 'price', order = 'ASC' ) => {
     try {
         // Calcula el offset y el límite para la paginación
         const offset = (page - 1) * limit;

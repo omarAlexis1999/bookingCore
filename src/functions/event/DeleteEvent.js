@@ -2,7 +2,7 @@ const { app } = require('@azure/functions');
 const eventService = require('../../services/eventService');
 const errorHandler  = require('../../middlewares/errorHandler');
 const logHandler = require('../../middlewares/logHandler');
-const { responseHandler, parseRequestBody} = require('../../utils/requestUtils');
+const { responseHandler} = require('../../utils/requestUtils');
 
 const deleteEvent = async (request, context) => {
     context.log(`Http function processed request for url "${request.url}"`);
