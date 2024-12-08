@@ -47,7 +47,7 @@ exports.createBooking = async (user_id, bookingData) => {
     }
 };
 
-exports.getBookingById = async ({id,page = 1, limit = 10}) => {
+exports.getBookingById = async (id,page = 1, limit = 10) => {
     try {
         const offset = (page - 1) * limit;
         // Busca la reserva por su ID
@@ -100,7 +100,7 @@ exports.getBookingById = async ({id,page = 1, limit = 10}) => {
     }
 };
 
-exports.getAllBookings = async ({ page = 1, limit = 10, fromDate, toDate, status, user_id }) => {
+exports.getAllBookings = async ( page = 1, limit = 10, fromDate, toDate, status, user_id ) => {
     try {
         // Calcula el offset y el límite para la paginación
         const offset = (page - 1) * limit;

@@ -48,7 +48,7 @@ exports.getSeatById = async (id) => {
 /**
  * Listar todos los asientos de un evento
  */
-exports.getSeatsByEvent = async (event_id, { page = 1, limit = 10, row, status, minPrice, maxPrice }) => {
+exports.getSeatsByEvent = async (event_id, page = 1, limit = 10, row, status, minPrice, maxPrice ) => {
     try {
         // Calcula el offset y el límite para la paginación
         const offset = (page - 1) * limit;

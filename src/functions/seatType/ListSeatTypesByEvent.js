@@ -4,7 +4,7 @@ const errorHandler  = require('../../middlewares/errorHandler');
 const logHandler = require('../../middlewares/logHandler');
 const { responseHandler, parseRequestBody} = require('../../utils/requestUtils');
 
-const listSeatTypes = async (request, context) => {
+const listSeatTypesByEvent = async (request, context) => {
     context.log(`Http function processed request for url "${request.url}"`);
     const result = await logHandler('List SeatTypes', context, async () => {
         const { id } = request.params;
@@ -22,5 +22,5 @@ app.http('ListSeatTypes', {
     methods: ['GET'],
     authLevel: 'anonymous',
     route: 'seatType/event/{id}',
-    handler: errorHandler(listSeatTypes),
+    handler: errorHandler(listSeatTypesByEvent),
 });
