@@ -1,0 +1,63 @@
+name: Deploy Node.js project to Azure Function App
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    environment: DEV
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node ${{ vars.NODE_VERSION }} Environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ vars.NODE_VERSION }}
+
+      - name: 'Azure Login'
+        uses: Azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: 'Resolve Project Dependencies Using Npm'
+        shell: bash
+        run: |
+          pushd './${{ vars.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          npm install
+          npm run build --if-present
+          popd
+
+      - name: 'Sync Database'
+        env:
+          DB_NAME: ${{ vars.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ vars.DB_HOST }}
+          DB_PORT: ${{ vars.DB_PORT }}
+        run: node sync-db.js
+
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1
+        id: fa
+        with:
+          app-name: ${{ vars.AZURE_FUNCTIONAPP_NAME }}
+          package: ${{ vars.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+
+      - name: 'Set Environment Variables'
+        run: |
+          az functionapp config appsettings set \
+            --name ${{ vars.AZURE_FUNCTIONAPP_NAME }} \
+            --resource-group ${{ vars.RESOURCE_GROUP_NAME }} \
+            --settings DB_HOST=${{ vars.DB_HOST }} \
+                       DB_PORT=${{ vars.DB_PORT }} \
+                       DB_USER=${{ secrets.DB_USER }} \
+                       DB_NAME=${{ vars.DB_NAME }} \
+                       DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+                       NODE_ENV=${{ vars.NODE_ENV }}
